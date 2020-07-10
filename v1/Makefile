@@ -20,7 +20,7 @@ IMAGE_NAME := $(MODULE_NAME)_$(VERSION)
 TAG := latest
 
 SERVICE_NAME := $(MODULE_NAME)-$(VERSION)
-SA_NAME := $(SERVICE_NAME)@$(PROJECT).iam.gserviceaccount.com
+SERVICE_ACCOUNT := $(SERVICE_NAME)@$(PROJECT).iam.gserviceaccount.com
 
 REGION=europe-west1
 
@@ -70,7 +70,7 @@ deploy: check
 		--memory=128Mi \
 		--image=gcr.io/$(PROJECT)/$(IMAGE_NAME) \
 		--allow-unauthenticated \
-		--service-account=$(SA_NAME)
+		--service-account=$(SERVICE_ACCOUNT)
 
 smoke-test-local:
 	go run client/client.go -host=localhost -port=$(DEFAULT_PORT) -name=Jonas
@@ -84,7 +84,7 @@ smoke-test-cloud: check
 	go run client/client.go -host="$${URL#https://}" -port=443
 
 destroy: check
-	gcloud iam service-accounts delete $(SA_NAME) \
+	gcloud iam service-accounts delete $(SERVICE_ACCOUNT) \
 		--project=$(PROJECT)
 	gcloud run services delete $(SERVICE_NAME) \
 		--project=$(PROJECT) \
