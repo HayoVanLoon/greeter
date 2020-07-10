@@ -22,6 +22,11 @@ TAG := latest
 SERVICE_NAME := $(MODULE_NAME)-$(VERSION)
 SA_NAME := $(SERVICE_NAME)@$(PROJECT).iam.gserviceaccount.com
 
+REGION=europe-west1
+
+DEFAULT_PORT=8080
+
+
 .PHONY: clean
 
 check:
@@ -38,6 +43,7 @@ protoc:
 	make -C proto protoc-go
 
 run:
+	export PORT=$(DEFAULT_PORT) && \
 	go run server.go
 
 build:
@@ -59,17 +65,28 @@ service-account: check
 deploy: check
 	gcloud run deploy $(SERVICE_NAME) \
 		--project=$(PROJECT) \
-		--region=europe-west1 \
+		--region=$(REGION) \
 		--platform=managed \
 		--memory=128Mi \
 		--image=gcr.io/$(PROJECT)/$(IMAGE_NAME) \
 		--allow-unauthenticated \
 		--service-account=$(SA_NAME)
 
+smoke-test-local:
+	go run client/client.go -host=localhost -port=$(DEFAULT_PORT) -name=Jonas
+
+smoke-test-cloud: check
+	URL=$$(gcloud run services describe $(SERVICE_NAME) \
+ 		--project=$(PROJECT) \
+ 		--region=$(REGION) \
+ 		--platform=managed \
+ 		--format='value(status.address.url)') && \
+	go run client/client.go -host="$${URL#https://}" -port=443
+
 destroy: check
 	gcloud iam service-accounts delete $(SA_NAME) \
 		--project=$(PROJECT)
 	gcloud run services delete $(SERVICE_NAME) \
 		--project=$(PROJECT) \
-		--region=europe-west1 \
+		--region=$(REGION) \
 		--platform=managed
