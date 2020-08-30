@@ -49,6 +49,8 @@
 **/build
 
 **/tmp
+**/etc
+**/var
 **/secrets
 **/private
 **.credentials

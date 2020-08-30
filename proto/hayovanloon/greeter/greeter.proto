@@ -1,0 +1,96 @@
+/*
+ * Copyright 2020 Hayo van Loon
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+syntax = "proto3";
+
+package hayovanloon.greeter;
+
+option java_multiple_files = true;
+option java_package = "gl.greeter";
+option go_package = "github.com/HayoVanLoon/genproto/greeter;greeter";
+
+import "google/api/annotations.proto";
+
+
+service Greeter {
+
+    // Creates a Greeting for later use.
+    rpc CreateGreeting (CreateGreetingRequest) returns (Greeting) {
+        option (google.api.http) = {
+            post: "/v1/greetings"
+            body: "*"
+        };
+    }
+
+    // Retrieves a Greeting.
+    rpc GetGreeting (GetGreetingRequest) returns (Greeting) {
+        option (google.api.http) = {
+            get: "/v1/greetings/{name}"
+        };
+    }
+
+    // Lists all Greetings.
+    rpc ListGreetings (ListGreetingsRequest) returns (ListGreetingsResponse) {
+        option (google.api.http) = {
+            get: "/v1/greetings"
+        };
+    }
+
+    // Return all Hugs.
+    rpc ListHugs (ListHugsRequest) returns (ListHugsResponse) {
+        option (google.api.http) = {
+            get: "/v1/hugs"
+        };
+    }
+}
+
+// A pleasant greeting.
+message Greeting {
+
+    // The text of the greeting.
+    string text = 1;
+}
+
+// A wordless hug.
+message Hug {
+}
+
+message CreateGreetingRequest {
+    // Name of person to be greeted.
+    string name = 1;
+}
+
+message GetGreetingRequest {
+    // Name of person looking for a greeting.
+    string name = 1;
+}
+
+message ListGreetingsRequest {
+}
+
+message ListGreetingsResponse {
+    repeated Greeting greetings = 1;
+}
+
+// All your hugs are belong to us.
+message ListHugsRequest {
+}
+
+// A bundle of hugs.
+message ListHugsResponse {
+    repeated Hug hugs = 1;
+}

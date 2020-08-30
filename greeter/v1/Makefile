@@ -1,4 +1,4 @@
-# Copyright 2019 Hayo van Loon
+# Copyright 2020 Hayo van Loon
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
 
 MODULE_NAME := greeter
 VERSION := $(shell basename `pwd`)
+
+PROTO_GENERATED_DIR := ../../genproto
 
 # Docker-related
 IMAGE_NAME := $(MODULE_NAME)_$(VERSION)
@@ -36,11 +38,17 @@ endif
 
 all: clean build push-gcr deploy
 
+# TODO(hvl): unsafe...
+release: build push-gcr deploy-unsafe
+
 clean:
 	go clean
 
 protoc:
-	make -C proto protoc-go
+	make -C ../../proto protoc-go OUT=$(PROTO_GENERATED_DIR)
+
+push-genproto:
+	cd $(PROTO_GENERATED_DIR) && git add . && git commit -m "update" && git push
 
 run:
 	export PORT=$(DEFAULT_PORT) && \
@@ -69,8 +77,20 @@ deploy: check
 		--platform=managed \
 		--memory=128Mi \
 		--image=gcr.io/$(PROJECT)/$(IMAGE_NAME) \
+		--no-allow-unauthenticated \
+		--service-account=$(SERVICE_ACCOUNT) \
+		--labels=$(LABELS)
+
+deploy-unsafe: check
+	gcloud run deploy $(SERVICE_NAME) \
+		--project=$(PROJECT) \
+		--region=$(REGION) \
+		--platform=managed \
+		--memory=128Mi \
+		--image=gcr.io/$(PROJECT)/$(IMAGE_NAME) \
 		--allow-unauthenticated \
-		--service-account=$(SERVICE_ACCOUNT)
+		--service-account=$(SERVICE_ACCOUNT) \
+		--labels=$(LABELS)
 
 smoke-test-local:
 	go run client/client.go -host=localhost -port=$(DEFAULT_PORT) -name=Jonas

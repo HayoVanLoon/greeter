@@ -1,4 +1,4 @@
-# Copyright 2019 Hayo van Loon
+# Copyright 2020 Hayo van Loon
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.13-alpine AS builder
+FROM golang:1.15-alpine AS builder
 RUN apk --update --no-cache add git gcc musl-dev protobuf
-#FROM golang:1.13-buster as builder
-
 
 WORKDIR /build
-
-ENV GO111MODULE=on
 
 COPY go.mod .
 COPY go.sum .
@@ -29,16 +25,13 @@ COPY server.go .
 
 RUN go build -mod=readonly -v -o app
 
+
 # Next stage
 FROM alpine
 RUN apk --update --no-cache add ca-certificates openssl
 
-#FROM debian:buster-slim
-#RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-#    ca-certificates && \
-#    rm -rf /var/lib/apt/lists/*
+WORKDIR /run
 
+COPY --from=builder /build/app .
 
-COPY --from=builder /build/app /usr/local/bin
-
-CMD ["/usr/local/bin/app"]
+CMD ["/run/app"]

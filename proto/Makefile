@@ -1,4 +1,4 @@
-# Copyright 2019 Hayo van Loon
+# Copyright 2020 Hayo van Loon
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,25 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-GOPATH ?= $(HOME)/go
-GENPROTO_REPO ?= github.com/HayoVanLoon/genproto/greeter
-
-GO_OUT_ESCAPED := $(shell echo $(GOPATH)/src/$(GENPROTO_REPO) | sed 's/\//\\\//g')
-
-GO_PROTO_DIRS := $(shell find . -name '*.proto' | \
-	sed -E "s/^\.\/(.*)\/.*/$(GO_OUT_ESCAPED)\/\1/" | \
-	uniq)
 PROTO_FILES := $(shell find . -name '*.proto')
 
-clean-protoc:
-	rm -rf $(GO_PROTO_DIRS)
+# GENPROTO_DIR is the (multi-tenant) directory for generated Go code.
+GO_OUT := $(GENPROTO_DIR)
 
-protoc-go: clean-protoc
+
+check:
+ifndef PROTO_GOOGLE_APIS
+	$(error Missing PROTO_GOOGLE_APIS)
+endif
+ifndef GO_OUT
+	$(error Missing GO_OUT)
+endif
+
+protoc-go: check
+	export GO111MODULE=on; \
 	for FILE in $(PROTO_FILES); do \
 		protoc \
-			--go_out="plugins=grpc:$(GOPATH)/src" \
+			--go_out=$(GO_OUT) \
+			--go-grpc_out=$(GO_OUT) \
+			--go_opt=paths=source_relative \
+			--go-grpc_opt=paths=source_relative \
 			-I$(PROTO_GOOGLE_APIS) \
 			-I. \
 			$$FILE; \
 	done
-	-update-genproto
+
+quick-push:
+ifndef GENPROTO_DIR
+	$(error Missing GENPROTO_DIR)
+endif
+	-cd $(GENPROTO_DIR); ./quick-push.sh
