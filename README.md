@@ -9,7 +9,7 @@ make -C greeter/v1 build docker-run
 
 ## Local Testing
 ```shell script
-make -C v1 smoke-test-local
+make -C greeter/v1 smoke-test-local
 ```
 
 ## Deploying to GCP
