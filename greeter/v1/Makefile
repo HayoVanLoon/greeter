@@ -12,20 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Naming
 MODULE_NAME := greeter
 VERSION := $(shell basename `pwd`)
+SERVICE_NAME := $(MODULE_NAME)-$(VERSION)
+SERVICE_ACCOUNT := $(SERVICE_NAME)@$(PROJECT).iam.gserviceaccount.com
 
-PROTO_GENERATED_DIR := ../../genproto
+# GCP Region
+REGION=europe-west1
+
+# GCP Labels added to Cloud Run deployment (for tracking costs)
+LABELS := app=cloud-endpoints-grpc
 
 # Docker-related
 IMAGE_NAME := $(MODULE_NAME)_$(VERSION)
 TAG := latest
 
-SERVICE_NAME := $(MODULE_NAME)-$(VERSION)
-SERVICE_ACCOUNT := $(SERVICE_NAME)@$(PROJECT).iam.gserviceaccount.com
-
-REGION=europe-west1
-
+# Settings for local deployments
 DEFAULT_PORT=8080
 
 
@@ -36,19 +39,13 @@ ifndef PROJECT
 	$(error PROJECT not set)
 endif
 
-all: clean build push-gcr deploy
+all: build push-gcr service-account deploy-unsafe
 
 # TODO(hvl): unsafe...
 release: build push-gcr deploy-unsafe
 
 clean:
 	go clean
-
-protoc:
-	make -C ../../proto protoc-go OUT=$(PROTO_GENERATED_DIR)
-
-push-genproto:
-	cd $(PROTO_GENERATED_DIR) && git add . && git commit -m "update" && git push
 
 run:
 	export PORT=$(DEFAULT_PORT) && \
@@ -101,7 +98,7 @@ smoke-test-cloud: check
  		--region=$(REGION) \
  		--platform=managed \
  		--format='value(status.address.url)') && \
-	go run client/client.go -host="$${URL#https://}" -port=443
+	go run client/client.go -host="$${URL#https://}" -port=443 -skip-auth=true
 
 destroy: check
 	gcloud iam service-accounts delete $(SERVICE_ACCOUNT) \
