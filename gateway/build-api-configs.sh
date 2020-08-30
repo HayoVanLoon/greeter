@@ -10,8 +10,17 @@ export BACKEND_SVC_1_NAME
 
 usage() {
 	echo "Well ain't that cute. BUT IT'S WRONG!
-$1
-"
+
+Usage:
+	$(basename "${0}") [ARGS...]
+
+Args:
+	-p: project id (optional if env var PROJECT is set)
+	-h: cloud run project hash (optional if env var PROJ_HASH is set)
+	-g: gateway service name
+	-1: backend service 1 name
+
+$1"
 	exit 1
 }
 
@@ -34,11 +43,6 @@ while getopts p:h:g:1: o; do
 	*) usage ;;
 	esac
 done
-
-echo "${PROJECT}" \
-		"${PROJ_HASH}" \
-		"${GATEWAY_SVC_NAME}" \
-		"${BACKEND_SVC_1_NAME}"
 
 if [ -z "${PROJECT}" ]; then
 	usage "Missing '-p <project id>'"
