@@ -41,7 +41,9 @@ PROTO_GOOGLE_APIS :=
 
 .PHONY: clean
 
-release: clean build deploy
+all: service-account dummy-deploy release
+
+release: build deploy
 
 check:
 ifndef PROJECT
