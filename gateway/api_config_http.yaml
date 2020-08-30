@@ -1,0 +1,20 @@
+type: google.api.Service
+config_version: 3
+
+name: ${GATEWAY_SVC_NAME}-${PROJ_HASH}-ew.a.run.app
+
+title: Greeter
+apis:
+  - name: hayovanloon.greeter.Greeter
+
+http:
+  rules:
+    - selector: hayovanloon.greeter.Greeter.CreateGreeting
+      post: "/v1/greetings"
+      body: "*"
+    - selector: hayovanloon.greeter.Greeter.GetGreeting
+      get: "/v1/greetings/{name}"
+    - selector: hayovanloon.greeter.Greeter.ListGreetings
+      get: "/v1/greetings"
+    - selector: hayovanloon.greeter.Greeter.ListHugs
+      get: "/v1/hugs"

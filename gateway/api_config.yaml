@@ -1,0 +1,21 @@
+type: google.api.Service
+config_version: 3
+
+name: ${GATEWAY_SVC_NAME}-${PROJ_HASH}-ew.a.run.app
+
+title: Greeter
+apis:
+  - name: hayovanloon.greeter.Greeter
+
+usage:
+  rules:
+    - selector: "*"
+      allow_unregistered_calls: true
+#    - selector: "hayovanloon.greeter.Greeter.ListHugs"
+#      allow_unregistered_calls: false
+
+backend:
+  rules:
+    - selector: "*"
+      address: grpcs://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app
+      protocol: h2

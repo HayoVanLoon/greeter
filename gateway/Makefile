@@ -29,7 +29,7 @@ REGION=europe-west1
 LABELS := app=cloud-endpoints-grpc
 
 # PROJ_HASH is the short hash after the service name in the Cloud Run URL
-PROJ_HASH :=
+PROJ_HASH := $(PROJ_HASH)
 SELF_HOST := $(SERVICE_NAME)-$(PROJ_HASH)-ew.a.run.app
 
 # Extensible Service Proxy parameters
@@ -41,15 +41,18 @@ PROTO_GOOGLE_APIS :=
 
 .PHONY: clean
 
-release: build deploy
+release: clean build deploy
 
 check:
-ifndef PROJ_HASH
-	$(error PROJ_HASH not set)
-endif
 ifndef PROJECT
 	$(error PROJECT not set)
 endif
+ifndef PROJ_HASH
+	$(error PROJ_HASH not set)
+endif
+
+clean:
+	-rm -rf var
 
 protoc-desc:
 ifndef PROTO_GOOGLE_APIS
@@ -64,11 +67,14 @@ endif
     	-I../proto \
     	$(GREETER_SERVICE_PROTO)
 
+api-configs: clean check
+	./build-api-configs.sh -g $(SERVICE_NAME) -1 $(GREETER_SERVICE_NAME)
+
 deploy-endpoints: check protoc-desc
 	gcloud endpoints services deploy \
 		var/api_descriptor.pb \
-		api_config.yaml \
-		api_config_http.yaml \
+		var/api_config.yaml \
+		var/api_config_http.yaml \
 		--project=$(PROJECT)
 
 build: check deploy-endpoints
