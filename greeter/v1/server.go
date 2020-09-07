@@ -20,7 +20,7 @@ package main
 import (
 	"context"
 	"fmt"
-	pb "github.com/HayoVanLoon/genproto/hayovanloon/greeter"
+	pb "github.com/HayoVanLoon/genproto/hayovanloon/greeter/v1"
 	"github.com/HayoVanLoon/go-commons/logjson"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

@@ -22,7 +22,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	pb "github.com/HayoVanLoon/genproto/hayovanloon/greeter"
+	pb "github.com/HayoVanLoon/genproto/hayovanloon/greeter/v1"
 	"google.golang.org/api/idtoken"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

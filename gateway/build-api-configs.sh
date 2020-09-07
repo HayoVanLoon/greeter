@@ -31,15 +31,16 @@ process() {
 	sed -i -E "s/\\$\\{PROJ_HASH\\}/${3}/g" "${1}"
 	sed -i -E "s/\\$\\{GATEWAY_SVC_NAME\\}/${4}/g" "${1}"
 	sed -i -E "s/\\$\\{BACKEND_SVC_1_NAME\\}/${5}/g" "${1}"
+	sed -i -E "s/\\$\\{BACKEND_SVC_2_NAME\\}/${6}/g" "${1}"
 }
 
-while getopts p:h:g:1: o; do
-	echo "${o}" ${OPTARG}
+while getopts p:h:g:1:2: o; do
 	case "${o}" in
 	"p") PROJECT=${OPTARG};;
 	"h") PROJ_HASH=${OPTARG};;
 	"g") GATEWAY_SVC_NAME=${OPTARG};;
 	"1") BACKEND_SVC_1_NAME=${OPTARG};;
+	"2") BACKEND_SVC_2_NAME=${OPTARG};;
 	*) usage ;;
 	esac
 done
@@ -56,6 +57,9 @@ fi
 if [ -z "${BACKEND_SVC_1_NAME}" ]; then
 	usage "Missing '-1 <backend service 1 name>'"
 fi
+if [ -z "${BACKEND_SVC_2_NAME}" ]; then
+	usage "Missing '-2 <backend service 1 name>'"
+fi
 
 OLD_DIR="${PWD}"
 mkdir -p var
@@ -66,7 +70,8 @@ for f in api_config.yaml api_config_auth.yaml api_config_http.yaml; do
 		"${PROJECT}" \
 		"${PROJ_HASH}" \
 		"${GATEWAY_SVC_NAME}" \
-		"${BACKEND_SVC_1_NAME}"
+		"${BACKEND_SVC_1_NAME}" \
+		"${BACKEND_SVC_2_NAME}"
 done
 
 cd "$OLD_DIR" || exit

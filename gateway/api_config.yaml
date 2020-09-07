@@ -3,19 +3,21 @@ config_version: 3
 
 name: ${GATEWAY_SVC_NAME}-${PROJ_HASH}-ew.a.run.app
 
-title: Greeter
+title: The Foo Bar
 apis:
-  - name: hayovanloon.greeter.Greeter
+  - name: hayovanloon.greeter.v1.Greeter
+  - name: hayovanloon.bartender.v1.Bartender
 
 usage:
   rules:
     - selector: "*"
       allow_unregistered_calls: true
-#    - selector: "hayovanloon.greeter.Greeter.ListHugs"
-#      allow_unregistered_calls: false
 
 backend:
   rules:
-    - selector: "*"
+    - selector: hayovanloon.greeter.*
       address: grpcs://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app
+      protocol: h2
+    - selector:  hayovanloon.bartender.*
+      address: grpcs://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app
       protocol: h2

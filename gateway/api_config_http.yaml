@@ -3,18 +3,24 @@ config_version: 3
 
 name: ${GATEWAY_SVC_NAME}-${PROJ_HASH}-ew.a.run.app
 
-title: Greeter
+title: The Foo Bar
 apis:
-  - name: hayovanloon.greeter.Greeter
+  - name: hayovanloon.greeter.v1.Greeter
+  - name: hayovanloon.bartender.v1.Bartender
 
 http:
   rules:
-    - selector: hayovanloon.greeter.Greeter.CreateGreeting
+    - selector: hayovanloon.greeter.v1.Greeter.CreateGreeting
       post: "/v1/greetings"
       body: "*"
-    - selector: hayovanloon.greeter.Greeter.GetGreeting
+    - selector: hayovanloon.greeter.v1.Greeter.GetGreeting
       get: "/v1/greetings/{name}"
-    - selector: hayovanloon.greeter.Greeter.ListGreetings
+    - selector: hayovanloon.greeter.v1.Greeter.ListGreetings
       get: "/v1/greetings"
-    - selector: hayovanloon.greeter.Greeter.ListHugs
+    - selector: hayovanloon.greeter.v1.Greeter.ListHugs
       get: "/v1/hugs"
+    - selector: hayovanloon.bartender.v1.Bartender.CreateBeer
+      post: "/v1/beers/{brand}/type"
+      body: beer
+    - selector: hayovanloon.bartender.v1.Bartender.GetBeer
+      get: "/v1/beers/{brand}/type/{name}"

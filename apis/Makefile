@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROTO_FILES := $(shell find . -name '*.proto')
+PROTO_ROOT := ./proto
+PROTO_FILES := $(shell find $(PROTO_ROOT) -name '*.proto' | sort)
 
 # GENPROTO_DIR is the (multi-tenant) directory for generated Go code.
 GO_OUT := $(GENPROTO_DIR)
+
+PY_OUT := python/var
 
 
 check:
@@ -28,19 +31,28 @@ endif
 
 protoc-go: check
 	export GO111MODULE=on; \
-	for FILE in $(PROTO_FILES); do \
-		protoc \
-			--go_out=$(GO_OUT) \
-			--go-grpc_out=$(GO_OUT) \
-			--go_opt=paths=source_relative \
-			--go-grpc_opt=paths=source_relative \
-			-I$(PROTO_GOOGLE_APIS) \
-			-I. \
-			$$FILE; \
-	done
+	protoc \
+		--go_out=$(GO_OUT) \
+		--go-grpc_out=$(GO_OUT) \
+		--go_opt=paths=source_relative \
+		--go-grpc_opt=paths=source_relative \
+		-I$(PROTO_GOOGLE_APIS) \
+		-I$(PROTO_ROOT) \
+		$(PROTO_FILES)
 
 quick-push:
 ifndef GENPROTO_DIR
 	$(error Missing GENPROTO_DIR)
 endif
 	-cd $(GENPROTO_DIR); ./quick-push.sh
+
+protoc-py: check
+	mkdir -p $(PY_OUT)
+	rm -rf $(PY_OUT)/*
+	. python/.venv/bin/activate; \
+	python -m grpc.tools.protoc \
+		--python_out=$(PY_OUT) \
+		--grpc_python_out=$(PY_OUT) \
+		-I$(PROTO_GOOGLE_APIS) \
+		-I$(PROTO_ROOT) \
+		$(PROTO_FILES)

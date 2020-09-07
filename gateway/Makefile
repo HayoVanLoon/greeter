@@ -20,7 +20,9 @@ SERVICE_ACCOUNT := $(SERVICE_NAME)@$(PROJECT).iam.gserviceaccount.com
 
 # Backend services
 GREETER_SERVICE_NAME := greeter-v1
-GREETER_SERVICE_PROTO := ../proto/hayovanloon/greeter/greeter.proto
+GREETER_SERVICE_PROTO := hayovanloon/greeter/v1/greeter.proto
+BARTENDER_SERVICE_NAME := bartender-v1
+BARTENDER_SERVICE_PROTO := hayovanloon/bartender/v1/bartender.proto
 
 # GCP Region
 REGION=europe-west1
@@ -33,10 +35,11 @@ PROJ_HASH := $(PROJ_HASH)
 SELF_HOST := $(SERVICE_NAME)-$(PROJ_HASH)-ew.a.run.app
 
 # Extensible Service Proxy parameters
-ESP_VERSION := 2.16.0
+ESP_VERSION := 2.17.0
 
+PROTO_ROOT := ../apis/proto
 # Path to a clone of the GoogleApis repository
-PROTO_GOOGLE_APIS :=
+PROTO_GOOGLE_APIS := $(PROTO_GOOGLE_APIS)
 
 
 .PHONY: clean
@@ -66,22 +69,25 @@ endif
 		--include_source_info \
       	--descriptor_set_out var/api_descriptor.pb \
 		-I$(PROTO_GOOGLE_APIS) \
-    	-I../proto \
-    	$(GREETER_SERVICE_PROTO)
+    	-I$(PROTO_ROOT) \
+    	$(GREETER_SERVICE_PROTO) $(BARTENDER_SERVICE_PROTO)
 
-api-configs: clean check
-	./build-api-configs.sh -g $(SERVICE_NAME) -1 $(GREETER_SERVICE_NAME)
+api-configs: check
+	./build-api-configs.sh \
+		-g $(SERVICE_NAME) \
+		-1 $(GREETER_SERVICE_NAME) \
+		-2 $(BARTENDER_SERVICE_NAME)
 
-deploy-endpoints: check protoc-desc
+deploy-endpoints: check protoc-desc api-configs
 	gcloud endpoints services deploy \
 		var/api_descriptor.pb \
 		var/api_config.yaml \
 		var/api_config_http.yaml \
 		--project=$(PROJECT)
 
-build: check deploy-endpoints
-	@export SVC=$$(gcloud endpoints services list | grep $(SERVICE_NAME)); \
-	export SVC_VERSION=$$(gcloud endpoints configs list --service="$$SVC" | head -n 2 | tail -n 1 | sed -E "s/\s.+//g"); \
+build: clean check deploy-endpoints
+	@export SVC=$$(gcloud endpoints services list --project=$(PROJECT) | grep $(SERVICE_NAME)); \
+	export SVC_VERSION=$$(gcloud endpoints configs list --project=$(PROJECT) --service="$$SVC" | head -n 2 | tail -n 1 | sed -E "s/\s.+//g"); \
 	echo Endpoints version: $${SVC_VERSION}; \
 	vendor/gcloud_build_image.sh -s $(SELF_HOST) -c $${SVC_VERSION} -p $(PROJECT)
 
@@ -107,8 +113,8 @@ dummy-deploy: check
 		--labels=$(LABELS)
 
 deploy: check
-	@export SVC=$$(gcloud endpoints services list | grep $(SERVICE_NAME)); \
-	export SVC_VERSION=$$(gcloud endpoints configs list --service="$$SVC" | head -n 2 | tail -n 1 | sed -E "s/\s.+//g"); \
+	@export SVC=$$(gcloud endpoints services list --project=$(PROJECT) | grep $(SERVICE_NAME)); \
+	export SVC_VERSION=$$(gcloud endpoints configs list --service="$$SVC" --project=$(PROJECT) | head -n 2 | tail -n 1 | sed -E "s/\s.+//g"); \
 	echo Endpoints version: $${SVC_VERSION}; \
 	gcloud run deploy $(SERVICE_NAME) \
 		--project=$(PROJECT) \

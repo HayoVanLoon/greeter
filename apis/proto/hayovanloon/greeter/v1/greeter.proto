@@ -17,11 +17,11 @@
 
 syntax = "proto3";
 
-package hayovanloon.greeter;
+package hayovanloon.greeter.v1;
 
 option java_multiple_files = true;
 option java_package = "gl.greeter";
-option go_package = "github.com/HayoVanLoon/genproto/greeter;greeter";
+option go_package = "github.com/HayoVanLoon/genproto/hayovanloon/greeter/v1;greeter";
 
 import "google/api/annotations.proto";
 
