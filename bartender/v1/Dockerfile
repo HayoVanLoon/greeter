@@ -14,12 +14,10 @@ WORKDIR /app
 
 # Pre-install local library
 COPY ./var/ ./var/
-RUN find
 RUN pip install var/.
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-RUN pip show barapis
 
 COPY src .
 
