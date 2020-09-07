@@ -28,7 +28,7 @@ import "google/api/annotations.proto";
 
 service Bartender {
 
-    // Adds a new beer the collection.
+    // Adds a new beer.
     rpc CreateBeer (CreateBeerRequest) returns (Beer) {
         option (google.api.http) = {
             post: "/v1/beers/{brand}/type"
@@ -36,7 +36,7 @@ service Bartender {
         };
     }
 
-    // Get a beer.
+    // Gets a beer.
     rpc GetBeer (GetBeerRequest) returns (Beer) {
         option (google.api.http) = {
             get: "/v1/beers/{brand}/type/{name}"
@@ -64,14 +64,18 @@ message Beer {
 
 message GetBeerRequest {
 
+    // Name of the beer (type)
     string name = 1;
 
+    // The beer brand
     string brand = 2;
 }
 
 message CreateBeerRequest {
 
+    // The beer brand
     string brand = 1;
 
+    // The beer particulars
     Beer beer = 2;
 }
