@@ -23,6 +23,9 @@ from grpc_reflection.v1alpha import reflection
 from hayovanloon.bartender.v1 import bartender_pb2, bartender_pb2_grpc
 
 
+##############################################################
+# Start of custom code
+##############################################################
 class BartenderServicer(bartender_pb2_grpc.BartenderServicer):
 
     def __init__(self) -> None:
@@ -53,6 +56,10 @@ class BartenderServicer(bartender_pb2_grpc.BartenderServicer):
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return bartender_pb2.Beer()
         return beer
+
+##############################################################
+# End of custom code
+##############################################################
 
 
 def serve(port, shutdown_grace_duration):
