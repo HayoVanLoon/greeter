@@ -30,9 +30,12 @@ class BartenderServicer(bartender_pb2_grpc.BartenderServicer):
 
     def __init__(self) -> None:
         super().__init__()
+        # For short-lived demo purposes only, use real storage for real applications
         self._cache = {}
 
-    def CreateBeer(self, create_beer_request: bartender_pb2.CreateBeerRequest, context):
+    def CreateBeer(self,
+                   create_beer_request: bartender_pb2.CreateBeerRequest,
+                   context: grpc.ServicerContext) -> bartender_pb2.Beer:
         beer = create_beer_request.beer
         if not beer or not beer.name or not create_beer_request.brand:
             context.set_details("Well ain't that cute? But it's WRONG!")
@@ -49,7 +52,9 @@ class BartenderServicer(bartender_pb2_grpc.BartenderServicer):
 
         return beer
 
-    def GetBeer(self, get_beer_request: bartender_pb2.GetBeerRequest, context):
+    def GetBeer(self,
+                get_beer_request: bartender_pb2.GetBeerRequest,
+                context: grpc.ServicerContext) -> bartender_pb2.Beer:
         key = (get_beer_request.name, get_beer_request.brand)
         beer = self._cache.get(key)
         if not beer:
