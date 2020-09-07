@@ -132,7 +132,7 @@ smoke-test-cloud: check
  		--region=$(REGION) \
  		--platform=managed \
  		--format='value(status.address.url)') && \
-	go run client/client.go -host="$${URL#https://}" -port=443 -skip-auth=true
+	echo "TODO: add grpcurl call to $${URL#https://}"
 
 destroy: check
 	gcloud iam service-accounts delete $(SERVICE_ACCOUNT) \
