@@ -42,25 +42,30 @@ class BartenderServicer(bartender_pb2_grpc.BartenderServicer):
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return bartender_pb2.Beer()
 
-        key = (beer.name, create_beer_request.brand)
-        if key in self._cache:
+        types = self._cache.get(create_beer_request.brand, [])
+        if beer.name in types:
             context.set_details("Plagiarism!")
             context.set_code(grpc.StatusCode.ALREADY_EXISTS)
             return bartender_pb2.Beer()
 
-        self._cache[key] = beer
+        types.append(beer)
+        self._cache[create_beer_request.brand] = types
 
         return beer
 
     def GetBeer(self,
                 get_beer_request: bartender_pb2.GetBeerRequest,
                 context: grpc.ServicerContext) -> bartender_pb2.Beer:
-        key = (get_beer_request.name, get_beer_request.brand)
-        beer = self._cache.get(key)
+        types = self._cache.get(get_beer_request.brand, [])
+        if not types:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return bartender_pb2.Beer()
+
+        beer = [b for b in types if b.name == get_beer_request.name]
         if not beer:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return bartender_pb2.Beer()
-        return beer
+        return beer[0]
 
 ##############################################################
 # End of custom code

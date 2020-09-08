@@ -1,3 +1,6 @@
 grpcio
 grpcio-reflection
 barapis
+
+# TODO(hvl): move to unit test requirements
+pytest

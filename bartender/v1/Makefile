@@ -64,7 +64,11 @@ freeze:
 	$(V); pip freeze
 
 clean:
-	go clean
+	rm -rf var
+	rm -rf .pytest_cache
+
+test: clean
+	$(V); pytest
 
 run:
 	export PORT=$(DEFAULT_PORT) && \
