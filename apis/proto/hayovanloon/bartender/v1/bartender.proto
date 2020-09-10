@@ -42,6 +42,13 @@ service Bartender {
             get: "/v1/beers/{brand}/type/{name}"
         };
     }
+
+    // Lists the beers.
+    rpc ListBeers (ListBeersRequest) returns (ListBeersResponse) {
+        option (google.api.http) = {
+            get: "/v1/beers"
+        };
+    }
 }
 
 // The main resource
@@ -62,6 +69,16 @@ message Beer {
     }
 }
 
+// A brand of beer
+message Brand {
+
+    // The brand name
+    string name = 1;
+
+    // The types of beer within the brand
+    repeated Beer types = 2;
+}
+
 message GetBeerRequest {
 
     // Name of the beer (type)
@@ -78,4 +95,13 @@ message CreateBeerRequest {
 
     // The beer particulars
     Beer beer = 2;
+}
+
+message ListBeersRequest {
+}
+
+message ListBeersResponse {
+
+    // All brands and beers matching criteria
+    repeated Brand brands = 1;
 }

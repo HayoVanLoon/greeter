@@ -70,7 +70,8 @@ endif
       	--descriptor_set_out var/api_descriptor.pb \
 		-I$(PROTO_GOOGLE_APIS) \
     	-I$(PROTO_ROOT) \
-    	$(GREETER_SERVICE_PROTO) $(BARTENDER_SERVICE_PROTO)
+    	$(GREETER_SERVICE_PROTO) \
+    	$(BARTENDER_SERVICE_PROTO)
 
 api-configs: check
 	./build-api-configs.sh \

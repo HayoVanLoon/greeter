@@ -24,3 +24,5 @@ http:
       body: beer
     - selector: hayovanloon.bartender.v1.Bartender.GetBeer
       get: "/v1/beers/{brand}/type/{name}"
+    - selector: hayovanloon.bartender.v1.Bartender.ListBeers
+      get: "/v1/beers"

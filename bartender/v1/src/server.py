@@ -67,6 +67,16 @@ class BartenderServicer(bartender_pb2_grpc.BartenderServicer):
             return bartender_pb2.Beer()
         return beer[0]
 
+    def ListBeers(self,
+                  list_beers_request: bartender_pb2.ListBeersRequest,
+                  context: grpc.ServicerContext) -> bartender_pb2.Beer:
+        resp = bartender_pb2.ListBeersResponse()
+        for b, types in self._cache.items():
+            brand = resp.brands.add()
+            brand.name = b
+            brand.types.extend(types)
+        return resp
+
 ##############################################################
 # End of custom code
 ##############################################################
