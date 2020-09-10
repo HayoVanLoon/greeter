@@ -10,25 +10,36 @@ apis:
 
 authentication:
   providers:
+    - id: google_account
+      issuer: https://accounts.google.com
+#      audiences: "https://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app,https://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app"
     - id: google_service_account
       issuer: ${GATEWAY_SVC_NAME}@${PROJECT}.iam.gserviceaccount.com
       jwks_uri: https://www.googleapis.com/robot/v1/metadata/x509/${GATEWAY_SVC_NAME}@${PROJECT}.iam.gserviceaccount.com
   rules:
-    - selector: "*"
+    - selector: "hayovanloon.bartender.*"
       requirements:
+        - provider_id: google_account
         - provider_id: google_service_account
+    - selector: "hayovanloon.greeter.*"
+      requirements:
+        - provider_id: google_account
+        - provider_id: google_service_account
+    - selector: hayovanloon.greeter.v1.Greeter.ListHugs
 
 usage:
   rules:
     - selector: "*"
+      allow_unregistered_calls: false
+    # Free hugs!
+    - selector: hayovanloon.greeter.v1.Greeter.ListHugs
       allow_unregistered_calls: true
-#    - selector: "hayovanloon.greeter.v1.Greeter.ListHugs"
-#      allow_unregistered_calls: false
 
 backend:
   rules:
-    - selector: "*"
+    - selector: hayovanloon.greeter.*
       address: grpcs://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app
-      protocol: h2
-      jwt_audience: "${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app"
-      #      disable_auth: true
+#      jwt_audience: "https://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app"
+    - selector:  hayovanloon.bartender.*
+      address: grpcs://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app
+#      jwt_audience: "https://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app"

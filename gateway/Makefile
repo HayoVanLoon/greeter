@@ -84,6 +84,7 @@ deploy-endpoints: check protoc-desc api-configs
 		var/api_descriptor.pb \
 		var/api_config.yaml \
 		var/api_config_http.yaml \
+		var/api_config_auth.yaml \
 		--project=$(PROJECT)
 
 build: clean check deploy-endpoints
