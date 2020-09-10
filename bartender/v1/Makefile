@@ -38,6 +38,8 @@ TAG := latest
 # Settings for local deployments
 DEFAULT_PORT=8080
 
+GATEWAY := https://esp-v2beta-$(PROJ_HASH)-ew.a.run.app
+
 
 .PHONY: clean
 
@@ -118,17 +120,32 @@ deploy-unsafe: check
 		--service-account=$(SERVICE_ACCOUNT) \
 		--labels=$(LABELS)
 
-do-local-create:
+do-create-beer-local:
 	grpcurl -plaintext \
 		-d '{"brand": "BrewDog", "beer":{"name": "ElvisJuice", "bottle_cl": 33}}' \
 		localhost:8080 \
 		hayovanloon.bartender.v1.Bartender/CreateBeer
 
-do-local-get:
+do-get-beer-local:
 	grpcurl -plaintext \
 		-d '{"name": "ElvisJuice", "brand": "BrewDog"}' \
 		localhost:8080 \
 		hayovanloon.bartender.v1.Bartender/GetBeer
+
+do-create-beer:
+	TOKEN=$$(gcloud auth print-identity-token \
+		--audiences=$(CLIENT_ID) --impersonate-service-account=$(DEV_SA)) && \
+	curl \
+		-d '{"name": "ElvisJuice", "bottle_cl": 33}' \
+		-H "Authorization: Bearer $$TOKEN" \
+		$(GATEWAY)/v1/beers/BrewDog/type
+
+do-list-beers:
+	TOKEN=$$(gcloud auth print-identity-token \
+		--audiences=$(CLIENT_ID) --impersonate-service-account=$(DEV_SA)) && \
+	curl \
+		-H "Authorization: Bearer $$TOKEN" \
+		$(GATEWAY)/v1/beers
 
 smoke-test-cloud: check
 	URL=$$(gcloud run services describe $(SERVICE_NAME) \

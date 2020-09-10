@@ -29,8 +29,11 @@ IMAGE_NAME := $(MODULE_NAME)_$(VERSION)
 TAG := latest
 
 # Settings for local deployments
-DEFAULT_PORT=8080
+DEFAULT_PORT := 8080
 
+GATEWAY := https://esp-v2beta-$(PROJ_HASH)-ew.a.run.app
+# Developer service account
+DEV_SA := $(DEV_SA)
 
 .PHONY: clean
 
@@ -89,6 +92,22 @@ deploy-unsafe: check
 		--service-account=$(SERVICE_ACCOUNT) \
 		--labels=$(LABELS)
 
+do-get-greeting-curl:
+	TOKEN=$$(gcloud auth print-identity-token \
+		--audiences=$(CLIENT_ID) --impersonate-service-account=$(DEV_SA)) && \
+	curl \
+		-H "Authorization: Bearer $$TOKEN" \
+		https://esp-v2beta-3tamfec76a-ew.a.run.app/v1/greetings/Fred
+
+do-list-hugs-curl:
+	curl https://esp-v2beta-3tamfec76a-ew.a.run.app/v1/hugs
+
+do-get-greeting-grpc:
+	grpcurl \
+		-d '{"name": "Fred"}' \
+		esp-v2beta-3tamfec76a-ew.a.run.app:443 \
+		hayovanloon.greeter.v1.Greeter/GetGreeting
+
 smoke-test-local:
 	go run client/client.go -host=localhost -port=$(DEFAULT_PORT) -name=Jonas
 
@@ -98,7 +117,15 @@ smoke-test-cloud: check
  		--region=$(REGION) \
  		--platform=managed \
  		--format='value(status.address.url)') && \
-	go run client/client.go -host="$${URL#https://}" -port=443 -skip-auth=true
+	TOKEN=$$(gcloud auth print-identity-token \
+		--audiences="$${URL#https://}" --impersonate-service-account=$(DEV_SA)) && \
+	go run client/client.go -host="$${URL#https://}" -port=443 -token=$$TOKEN
+
+smoke-test-gateway: check
+	TOKEN=$$(gcloud auth print-identity-token \
+		--audiences=$(CLIENT_ID) --impersonate-service-account=$(DEV_SA)) && \
+	URL=$(GATEWAY) && \
+	go run client/client.go -host="$${URL#https://}" -port=443 -token=$$TOKEN
 
 destroy: check
 	gcloud iam service-accounts delete $(SERVICE_ACCOUNT) \

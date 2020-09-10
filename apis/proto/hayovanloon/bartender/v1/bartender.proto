@@ -31,7 +31,7 @@ service Bartender {
     // Adds a new beer.
     rpc CreateBeer (CreateBeerRequest) returns (Beer) {
         option (google.api.http) = {
-            post: "/v1/beers/{brand}/type"
+            post: "/v1/{brand=beers/*}/types"
             body: "beer"
         };
     }
@@ -39,7 +39,7 @@ service Bartender {
     // Gets a beer.
     rpc GetBeer (GetBeerRequest) returns (Beer) {
         option (google.api.http) = {
-            get: "/v1/beers/{brand}/type/{name}"
+            get: "/v1/{name=beers/*/types/*}"
         };
     }
 
@@ -56,6 +56,9 @@ message Beer {
 
     // Name of the beer (type)
     string name = 1;
+
+    // Beer brand
+    string parent = 2;
 
     oneof packaging {
         // Bottle size in centiliters

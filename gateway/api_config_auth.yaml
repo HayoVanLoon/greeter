@@ -10,36 +10,31 @@ apis:
 
 authentication:
   providers:
-    - id: google_account
+    - id: google_id_token
       issuer: https://accounts.google.com
-#      audiences: "https://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app,https://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app"
-    - id: google_service_account
-      issuer: ${GATEWAY_SVC_NAME}@${PROJECT}.iam.gserviceaccount.com
-      jwks_uri: https://www.googleapis.com/robot/v1/metadata/x509/${GATEWAY_SVC_NAME}@${PROJECT}.iam.gserviceaccount.com
+      audiences: ${CLIENT_ID}
+#      jwks_uri: https://www.googleapis.com/oauth2/v3/certs
+      authorization_url: https://accounts.google.com
+#    - id: google_service_account
+#      issuer: ${GATEWAY_SVC_NAME}@${PROJECT}.iam.gserviceaccount.com
+#      jwks_uri: https://www.googleapis.com/robot/v1/metadata/x509/${GATEWAY_SVC_NAME}@${PROJECT}.iam.gserviceaccount.com
   rules:
     - selector: "hayovanloon.bartender.*"
       requirements:
-        - provider_id: google_account
-        - provider_id: google_service_account
+        - provider_id: google_id_token
+#        - provider_id: google_service_account
     - selector: "hayovanloon.greeter.*"
       requirements:
-        - provider_id: google_account
-        - provider_id: google_service_account
+        - provider_id: google_id_token
+#        - provider_id: google_service_account
     - selector: hayovanloon.greeter.v1.Greeter.ListHugs
-
-usage:
-  rules:
-    - selector: "*"
-      allow_unregistered_calls: false
-    # Free hugs!
-    - selector: hayovanloon.greeter.v1.Greeter.ListHugs
-      allow_unregistered_calls: true
+      requirements: []
 
 backend:
   rules:
     - selector: hayovanloon.greeter.*
       address: grpcs://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app
-#      jwt_audience: "https://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app"
+      jwt_audience: "https://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app"
     - selector:  hayovanloon.bartender.*
       address: grpcs://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app
-#      jwt_audience: "https://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app"
+      jwt_audience: "https://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app"

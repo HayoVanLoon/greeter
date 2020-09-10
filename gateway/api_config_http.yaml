@@ -14,15 +14,15 @@ http:
       post: "/v1/greetings"
       body: "*"
     - selector: hayovanloon.greeter.v1.Greeter.GetGreeting
-      get: "/v1/greetings/{name}"
+      get: "/v1/{name=greetings/*}"
     - selector: hayovanloon.greeter.v1.Greeter.ListGreetings
       get: "/v1/greetings"
     - selector: hayovanloon.greeter.v1.Greeter.ListHugs
       get: "/v1/hugs"
     - selector: hayovanloon.bartender.v1.Bartender.CreateBeer
-      post: "/v1/beers/{brand}/type"
+      post: "/v1/{brand=beers/*}/types"
       body: beer
     - selector: hayovanloon.bartender.v1.Bartender.GetBeer
-      get: "/v1/beers/{brand}/type/{name}"
+      get: "/v1/{name=beers/*/types/*}"
     - selector: hayovanloon.bartender.v1.Bartender.ListBeers
       get: "/v1/beers"

@@ -65,8 +65,12 @@ func getClient(host, port string) (pb.GreeterClient, func(), error) {
 	return cl, closeFn, nil
 }
 
-func addIdToken(ctx context.Context, aud string) (context.Context, error) {
-	tokenSource, err := idtoken.NewTokenSource(ctx, aud)
+func addIdToken(ctx context.Context, idToken, saKey, aud string) (context.Context, error) {
+	if idToken != "" {
+		ctx = grpcMetadata.AppendToOutgoingContext(ctx, "Authorization", "Bearer "+idToken)
+		return ctx, nil
+	}
+	tokenSource, err := idtoken.NewTokenSource(ctx, aud, idtoken.WithCredentialsFile(saKey))
 	if err != nil {
 		return nil, fmt.Errorf("error creating token source: %v", err)
 	}
@@ -74,16 +78,16 @@ func addIdToken(ctx context.Context, aud string) (context.Context, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating token: %v", err)
 	}
-	ctx = grpcMetadata.AppendToOutgoingContext(ctx, "authorization", "bearer "+token.AccessToken)
+	ctx = grpcMetadata.AppendToOutgoingContext(ctx, "Authorization", "Bearer "+token.AccessToken)
 	return ctx, nil
 }
 
-func createContext(aud string, skipAuth bool) (context.Context, func(), error) {
+func createContext(token, saKey, aud string) (context.Context, func(), error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	if !skipAuth && !strings.HasPrefix(aud, "localhost") {
+	if saKey != "" && !strings.HasPrefix(aud, "localhost") {
 		// TODO(hvl): check audience
 		var err error
-		ctx, err = addIdToken(ctx, aud)
+		ctx, err = addIdToken(ctx, token, saKey, aud)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -91,8 +95,8 @@ func createContext(aud string, skipAuth bool) (context.Context, func(), error) {
 	return ctx, cancel, nil
 }
 
-func authed(cl pb.GreeterClient, host, name string, skipAuth bool) {
-	ctx, cancel, err := createContext(host, skipAuth)
+func authed(cl pb.GreeterClient, host, name, token, saKey string) {
+	ctx, cancel, err := createContext(token, saKey, host)
 	if err != nil {
 		fmt.Printf("error creating context: %s\n", err)
 		return
@@ -148,7 +152,8 @@ func unauthed(cl pb.GreeterClient) {
 func main() {
 	var host = flag.String("host", "localhost", "gRPC host")
 	var port = flag.String("port", "8080", "gRPC host port")
-	var skipAuth = flag.Bool("skip-auth", false, "do not add ID token")
+	var token = flag.String("token", "", "id token")
+	var saKey = flag.String("sa-key", "", "service account json key")
 	var name = flag.String("name", "Bob", "name")
 	flag.Parse()
 
@@ -158,6 +163,6 @@ func main() {
 	}
 	defer closeFn()
 
-	authed(cl, *host, *name, *skipAuth)
+	authed(cl, *host, *name, *token, *saKey)
 	unauthed(cl)
 }
