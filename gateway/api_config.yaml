@@ -17,7 +17,5 @@ backend:
   rules:
     - selector: hayovanloon.greeter.*
       address: grpcs://${BACKEND_SVC_1_NAME}-${PROJ_HASH}-ew.a.run.app
-      protocol: h2
     - selector:  hayovanloon.bartender.*
       address: grpcs://${BACKEND_SVC_2_NAME}-${PROJ_HASH}-ew.a.run.app
-      protocol: h2
