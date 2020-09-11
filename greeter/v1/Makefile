@@ -42,10 +42,10 @@ ifndef PROJECT
 	$(error PROJECT not set)
 endif
 
-all: build push-gcr service-account deploy-unsafe
+all: build push-gcr service-account deploy
+	echo "Manual step: Set up OAuth2 Client ID at: https://console.cloud.google.com/apis/credentials"
 
-# TODO(hvl): unsafe...
-release: build push-gcr deploy-unsafe
+release: build push-gcr deploy
 
 clean:
 	go clean
@@ -78,17 +78,6 @@ deploy: check
 		--memory=128Mi \
 		--image=gcr.io/$(PROJECT)/$(IMAGE_NAME) \
 		--no-allow-unauthenticated \
-		--service-account=$(SERVICE_ACCOUNT) \
-		--labels=$(LABELS)
-
-deploy-unsafe: check
-	gcloud run deploy $(SERVICE_NAME) \
-		--project=$(PROJECT) \
-		--region=$(REGION) \
-		--platform=managed \
-		--memory=128Mi \
-		--image=gcr.io/$(PROJECT)/$(IMAGE_NAME) \
-		--allow-unauthenticated \
 		--service-account=$(SERVICE_ACCOUNT) \
 		--labels=$(LABELS)
 

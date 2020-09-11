@@ -19,17 +19,22 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	pb "github.com/HayoVanLoon/genproto/hayovanloon/greeter/v1"
 	"github.com/HayoVanLoon/go-commons/logjson"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"os"
 	"time"
 )
+
+const ForwardedUserInfoHeader = "X-Endpoint-API-UserInfo"
 
 type server struct {
 	pb.UnimplementedGreeterServer
@@ -64,10 +69,31 @@ func (s *server) GetGreeting(ctx context.Context, r *pb.GetGreetingRequest) (*pb
 	logjson.Debug("GetGreeting")
 	defer LogPanic()
 
-	if g, ok := s.cache[r.Name]; ok {
-		return g, nil
+	u := &UserInfo{}
+	if headers, ok := metadata.FromIncomingContext(ctx); ok {
+		if b64 := headers.Get(ForwardedUserInfoHeader); len(b64) > 0 {
+			bs, err := base64.RawStdEncoding.DecodeString(b64[0])
+			if err != nil {
+				logjson.Warn("could not decode " + b64[0])
+			} else {
+				logjson.Debug(string(bs))
+				err = json.Unmarshal(bs, u)
+				if err != nil {
+					logjson.Warn(fmt.Sprintf("unexpected user info format %s", err))
+				}
+				logjson.Debug(u)
+			}
+		}
 	}
-	resp := &pb.Greeting{Text: fmt.Sprintf("Hello %s, you came unexpected.", r.Name)}
+
+	t := ""
+	if g, ok := s.cache[r.Name]; ok {
+		t = g.Text
+	} else {
+		t = fmt.Sprintf("Hello %s, you came unexpected.", r.Name)
+	}
+
+	resp := &pb.Greeting{Text: fmt.Sprintf("%s (%s / %s / %s)", t, u.Issuer, u.Id, u.Email)}
 	return resp, nil
 }
 

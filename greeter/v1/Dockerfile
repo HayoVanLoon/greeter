@@ -17,11 +17,10 @@ RUN apk --update --no-cache add git gcc musl-dev protobuf
 
 WORKDIR /build
 
-COPY go.mod .
-COPY go.sum .
+COPY go.* ./
 RUN go mod download
 
-COPY server.go .
+COPY *.go ./
 
 RUN go build -mod=readonly -v -o app
 
