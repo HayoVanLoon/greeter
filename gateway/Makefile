@@ -83,9 +83,9 @@ deploy-endpoints: check protoc-desc api-configs
 	gcloud endpoints services deploy \
 		var/api_descriptor.pb \
 		var/api_config.yaml \
-		var/api_config_http.yaml \
 		var/api_config_auth.yaml \
 		--project=$(PROJECT)
+#		var/api_config_http.yaml \
 
 build: clean check deploy-endpoints
 	@export SVC=$$(gcloud endpoints services list --project=$(PROJECT) | grep $(SERVICE_NAME)); \
